@@ -1,32 +1,6 @@
 <?php
 require_once("../db2-connect.php");
 
-//<- 抓資料 重新命名product.name成product_name ->
-// if(isset($_GET["date"])){
-//     $date=$_GET["date"];
-//     $sql="SELECT user_order.*, users.account, product.price, product.name AS product_name FROM user_order
-//     JOIN users ON user_order.user_id = users.id
-//     JOIN product ON user_order.product_id = product.id
-//     WHERE user_order.order_date = '$date'
-//     ORDER BY user_order.id DESC
-//     ";
-
-// }else if(isset($_GET["product_id"])){
-//     $product_id=$_GET["product_id"];
-//     $sql="SELECT user_order.*, users.account, product.price, product.name AS product_name FROM user_order
-//     JOIN users ON user_order.user_id = users.id
-//     JOIN product ON user_order.product_id = product.id
-//     WHERE user_order.product_id = '$product_id'
-//     ORDER BY user_order.id DESC
-//     ";
-
-// }else{
-//     $sql="SELECT user_order.*, users.account, product.price, product.name AS product_name FROM user_order
-//     JOIN users ON user_order.user_id = users.id
-//     JOIN product ON user_order.product_id = product.id
-//     ORDER BY user_order.id DESC
-//     ";
-// }
 $whereClause = "";
 
 if (isset($_GET["date"])) {
@@ -47,23 +21,52 @@ if (isset($_GET["startDate"])) {
     $whereClause = "WHERE user_order.order_date BETWEEN '$start' AND '$end'";
 }
 
+
 $sql = "SELECT user_order.*, users.account, product.price, product.name AS product_name FROM user_order
 JOIN users ON user_order.user_id = users.id
 JOIN product ON user_order.product_id = product.id
+
 $whereClause
 ORDER BY user_order.id DESC
 ";
-
-
 
 $result = $conn->query($sql);
 $productCount = $result->num_rows;
 $rows = $result->fetch_all(MYSQLI_ASSOC);
 // var_dump($rows);
 
+//頁數
+if (isset($_GET["search"])) {
+    $search = $_GET["search"];
+    $sql = "SELECT * FROM user_order WHERE id LIKE '%$search%' ORDER BY order_date DESC";
+    $result = $conn->query($sql);
+    $userCount = $result->num_rows;
+} else {
+    if (isset($_GET["page"])) {
+        $page = $_GET["page"];
+    } else {
+        $page = 1;
+    }
 
+    $sqlAll = "SELECT * FROM user_order WHERE id ";
+    $resultAll = $conn->query($sqlAll);
+    $userCount = $resultAll->num_rows;
 
+    $per_page = 5;
+    $page_start = ($page - 1) * $per_page;
 
+    $sql = "SELECT * FROM user_order WHERE id ORDER BY order_date DESC LIMIT $page_start, $per_page";
+
+    $result = $conn->query($sql);
+
+    //計算頁數
+    $totalPage = ceil($userCount / $per_page);  //ceil無條件進位
+
+}
+
+$sql = $result->fetch_all(MYSQLI_ASSOC);  //關聯式陣列
+
+//頁數
 
 ?>
 <!doctype html>
@@ -83,13 +86,14 @@ $rows = $result->fetch_all(MYSQLI_ASSOC);
             padding: 0;
         }
 
-        a{
+        a {
             text-decoration: none;
             color: black;
             font-weight: 600;
         }
-        a:hover{
-            color:cadetblue
+
+        a:hover {
+            color: cadetblue
         }
 
         .object-cover {
@@ -103,11 +107,11 @@ $rows = $result->fetch_all(MYSQLI_ASSOC);
             padding: 25px 30px;
             min-height: 50px;
         }
-        .nav-item:hover{
+
+        .nav-item:hover {
             background: cadetblue;
             border-radius: 15px;
         }
-       
     </Style>
 </head>
 
@@ -173,15 +177,7 @@ $rows = $result->fetch_all(MYSQLI_ASSOC);
                             <img src="./images/201.jpg" alt="" width="32" height="32" class="rounded-circle me-2">
                             <strong>關於我們</strong>
                         </a>
-                        <!-- <ul class="dropdown-menu dropdown-menu-dark text-small shadow" aria-labelledby="dropdownUser1">
-                            <li><a class="dropdown-item" href="#">New project...</a></li>
-                            <li><a class="dropdown-item" href="#">Settings</a></li>
-                            <li><a class="dropdown-item" href="#">Profile</a></li>
-                            <li>
-                                <hr class="dropdown-divider">
-                            </li>
-                            <li><a class="dropdown-item" href="#">Sign out</a></li>
-                        </ul> -->
+
                     </div>
                 </div>
 
@@ -199,7 +195,7 @@ $rows = $result->fetch_all(MYSQLI_ASSOC);
                             <div class="row g-2 align-items-center">
                                 <div class="col-auto">
                                     <input type="date" class="form-control" name="startDate" value="<?php
-                                                                                                    if (isset($_GET["startDate"])) echo $_GET           ["startDate"];
+                                                                                                    if (isset($_GET["startDate"])) echo $_GET["startDate"];
                                                                                                     ?>">
                                 </div>
                                 <div class="col-auto">
@@ -216,6 +212,25 @@ $rows = $result->fetch_all(MYSQLI_ASSOC);
                             </div>
                         </form>
                     </div>
+                    <!-- 搜尋結果 -->
+                    <div class="py-2">
+                        <form action="order-list.php" method="get">
+                            <div class="input-group">
+                                <input type="text" class="form-control" name="search">
+                                <button type="submit" class="btn btn-secondary">搜尋</button>
+                            </div>
+                        </form>
+                    </div>
+                    <?php if (isset($_GET["search"])) : ?>
+                        <div class="py-2">
+                            <a class="btn btn-secondary" href="order-list.php">回訂單列表</a>
+                        </div>
+                        <h1><?= $_GET["search"] ?>的搜尋結果</h1>
+                    <?php endif; ?>
+                    <div class="py-2">
+                        共 <?= $userCount ?> 筆
+                    </div>
+
                     <div class="table-responsive">
                         <table class="table table-bordered">
                             <thead>
@@ -241,9 +256,9 @@ $rows = $result->fetch_all(MYSQLI_ASSOC);
                                         </td>
                                         </td>
                                         <td>
-                                        <a href="order-list.php?product_id=<?=$data["product_id"] ?>">
-                                        <?=$data["product_name"] ?>
-                                        </a>
+                                            <a href="order-list.php?product_id=<?= $data["product_id"] ?>">
+                                                <?= $data["product_name"] ?>
+                                            </a>
                                         </td>
                                         <td><?= $data["amount"] ?></td>
                                         <td>
@@ -267,27 +282,19 @@ $rows = $result->fetch_all(MYSQLI_ASSOC);
                         </table>
                     </div>
                 </div>
-                
+
 
                 <!-- 頁面選單 -->
-                <nav aria-label="Page navigation example">
-                    <ul class="pagination justify-content-end px-5">
-                        <li class="page-item">
-                            <a class="page-link" href="#" aria-label="Previous">
-                                <span aria-hidden="true">&laquo;</span>
-                            </a>
-                        </li>
-                        <li class="page-item"><a class="page-link" href="#">1</a></li>
-                        <li class="page-item"><a class="page-link" href="#">2</a></li>
-                        <li class="page-item"><a class="page-link" href="#">3</a></li>
-                        <li class="page-item">
-                            <a class="page-link" href="#" aria-label="Next">
-                                <span aria-hidden="true">&raquo;</span>
-                            </a>
-                        </li>
-                    </ul>
-                </nav>
-                                            
+                <?php if (!isset($_GET["search"])) : ?>
+                    <nav aria-label="Page navigation example">
+                        <ul class="pagination">
+                            <?php for ($i = 1; $i <= $totalPage; $i++) : ?>
+                                <li class="page-item <?php if ($i == $page) echo "active"; ?>"><a class="page-link" href="order-list.php?page=<?= $i ?>"><?= $i ?></a></li>
+                            <?php endfor; ?>
+                        </ul>
+                    </nav>
+                <?php endif; ?>
+
 
 
 
