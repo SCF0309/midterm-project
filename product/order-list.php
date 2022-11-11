@@ -40,7 +40,8 @@ $rows = $result->fetch_all(MYSQLI_ASSOC);
 // var_dump($rows);
 
 //頁數
-$sqlALL = "SELECT * FROM user_order ORDER BY order_date DESC";
+$sqlALL = "SELECT user_order.*, product.name AS product_name FROM user_order JOIN users ON user_order.user_id = users.id
+JOIN product ON user_order.product_id = product.id ORDER BY order_date DESC";
 $resultAll = $conn->query($sqlALL);
 $userCount = $resultAll->num_rows;
 // var_dump($resultAll); 
@@ -59,7 +60,7 @@ $userCount = $resultAll->num_rows;
 
     //計算頁數
     $totalPage = ceil($userCount / $per_page);  //ceil無條件進位
-    $rowsAll = $resultPage->fetch_all(MYSQLI_ASSOC);  //關聯式陣列
+    $rows = $resultPage->fetch_all(MYSQLI_ASSOC);  //關聯式陣列
 
 //頁數
 
@@ -241,6 +242,7 @@ $userCount = $resultAll->num_rows;
                             </thead>
                             <tbody>
                                 <?php foreach ($rows as $data) : ?>
+                                    
                                     <tr>
                                         <td>
                                             <a href="order-detail.php?id=<?= $data["id"] ?>">
