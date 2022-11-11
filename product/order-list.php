@@ -11,6 +11,10 @@ if (isset($_GET["product_id"])) {
     $product_id = $_GET["product_id"];
     $whereClause = "WHERE user_order.product_id = '$product_id'";
 }
+if (isset($_GET["product_name"])) {
+    $product_id = $_GET["product_name"];
+    $whereClause = "WHERE product.product.name = '$product_name'";
+}
 if (isset($_GET["user_id"])) {
     $user_id = $_GET["user_id"];
     $whereClause = "WHERE user_order.user_id = '$user_id'";
@@ -36,35 +40,26 @@ $rows = $result->fetch_all(MYSQLI_ASSOC);
 // var_dump($rows);
 
 //頁數
-if (isset($_GET["search"])) {
-    $search = $_GET["search"];
-    $sql = "SELECT * FROM user_order WHERE id LIKE '%$search%' ORDER BY order_date DESC";
-    $result = $conn->query($sql);
-    $userCount = $result->num_rows;
-} else {
+$sqlALL = "SELECT * FROM user_order ORDER BY order_date DESC";
+$resultAll = $conn->query($sqlALL);
+$userCount = $resultAll->num_rows;
+// var_dump($resultAll); 
     if (isset($_GET["page"])) {
         $page = $_GET["page"];
     } else {
         $page = 1;
     }
-
-    $sqlAll = "SELECT * FROM user_order WHERE id ";
-    $resultAll = $conn->query($sqlAll);
-    $userCount = $resultAll->num_rows;
-
+    
     $per_page = 5;
     $page_start = ($page - 1) * $per_page;
 
-    $sql = "SELECT * FROM user_order WHERE id ORDER BY order_date DESC LIMIT $page_start, $per_page";
+    $sqlPage = "SELECT * FROM `user_order` WHERE id ORDER BY `order_date` DESC LIMIT $page_start, $per_page";
 
-    $result = $conn->query($sql);
+    $resultPage = $conn->query($sqlPage);
 
     //計算頁數
     $totalPage = ceil($userCount / $per_page);  //ceil無條件進位
-
-}
-
-$sql = $result->fetch_all(MYSQLI_ASSOC);  //關聯式陣列
+    $rowsAll = $resultPage->fetch_all(MYSQLI_ASSOC);  //關聯式陣列
 
 //頁數
 
