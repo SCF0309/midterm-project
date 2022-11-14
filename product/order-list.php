@@ -50,6 +50,29 @@ $productCount = $result->num_rows;
 $rows = $result->fetch_all(MYSQLI_ASSOC);
 // var_dump($rows);
 
+
+//判斷篩選有無成立
+if (isset($_GET["user_order"])) {
+    $A = $_GET["user_order"];
+} else {
+    $A = "0";
+}
+if ($A != "0") {
+    $whsql = "WHERE user_order.order_status='" . $_GET["user_order"] . "'";
+} else {
+    $whsql = "";
+}
+
+//抓取分類
+$sqlStatus = "SELECT * FROM user_order ORDER BY order_status ASC ";
+$resultStatus = $conn->query($sqlStatus);
+$rowsStatus = $resultStatus->fetch_all(MYSQLI_ASSOC);
+
+
+
+
+
+
 //頁數
 $sqlALL = "SELECT user_order.*, users.account, product.price, product.name AS product_name FROM user_order JOIN users ON user_order.user_id = users.id
     JOIN product ON user_order.product_id = product.id  $whereClause ORDER BY user_order.order_date DESC";
@@ -73,7 +96,6 @@ $resultPage = $conn->query($sqlPage);
 $totalPage = ceil($userCount / $per_page);  //ceil無條件進位    
 $rows = $resultPage->fetch_all(MYSQLI_ASSOC);  //關聯式陣列
 
-//頁數
 
 ?>
 <!doctype html>
@@ -161,14 +183,8 @@ $rows = $resultPage->fetch_all(MYSQLI_ASSOC);  //關聯式陣列
 <body>
     <!--  style="border: 1px solid red ;"檢查邊框 -->
     <nav class="main-nav d-flex bg-dark fixed-top shadow">
-        <a class="text-nowrap px-3 text-white text-decoration-none d-flex align-items-center justify-content-center logo flex-shrink-0 fs-4 text" href="">藝拍</a>
-        <div class="nav">
-            <a class="nav-link active" aria-current="page" href="#">首頁</a>
-            <a class="nav-link" href="../product/product-list2.php">藝術品</a>
-            <a class="nav-link" href="../seller/sellers.php">畫家</a>
-            <a class="nav-link" href="../user/users.php">會員</a>
-            <a class="nav-link" href="../product/order-list.php">訂單</a>
-            <a class="nav-link" href="../user/product-list2.php">展覽空間</a>
+        <a class="text-nowrap px-3 text-white text-decoration-none d-flex align-items-center justify-content-center logo flex-shrink-0 fs-3 text" href="">藝拍</a>
+        <div class="nav">            
         </div>
         <div class="position-absolute top-0 end-0">
             <a class="btn btn-dark text-nowrap" href="logout.php">Sign out</a>
@@ -232,12 +248,14 @@ $rows = $resultPage->fetch_all(MYSQLI_ASSOC);  //關聯式陣列
                             </div>
                         </form>
                     </div> -->
-                    <?php if (isset($_GET["search"])) : ?>
+                    <!-- echo $sql debug -->
+                    <!-- <?php echo $sql;?> -->
+                    <!-- <?php if (isset($_GET["search"])) : ?>
                         <div class="py-2">
                             <a class="btn btn-secondary" href="order-list.php">回訂單列表</a>
                         </div>
                         <h1><?= $_GET["search"] ?>的搜尋結果</h1>
-                    <?php endif; ?>
+                    <?php endif; ?> -->
                     <div class="py-2">
                         共 <?= $userCount ?> 筆
                     </div>
@@ -252,7 +270,27 @@ $rows = $resultPage->fetch_all(MYSQLI_ASSOC);  //關聯式陣列
                                     <th>訂購數量</th>
                                     <th>訂購者</th>
                                     <th>寄送地址</th>
-                                    <th>出貨狀態</th>
+                                    <th>
+                                        <?php
+                                        //JOIN語法 SELECT A.*, B.b FROM A JOIN B ON A.a_id = B.id (a是A的副鍵)
+                                        $Statussql = "SELECT * FROM user_order ORDER BY order_status";
+                                        $csql = $conn->query($Statussql);
+                                        ?>
+                                        <select class="form-select" name="Status" id="Status" class="text-input" style="height:auto" onChange="location.replace('order-list.php?Status='+this.options[this.selectedIndex].value);">
+                                            <option value="0" selected>選擇出貨狀態
+                                            <?php foreach ($csql as $csql) : ?>
+                                                <option value="<?= $csql["id"] ?>" <?php if ($A == $csql["order_status"]) {echo "Status";} ?>><?= $csql["order_status"] ?></option>
+                                            <?php endforeach; ?>
+                                        
+                                        </select>
+                                            <!-- <select class="form-select"  aria-label="Default select example" name="order_status">                                            
+                                                <option selected>選擇出貨狀態</option>
+                                                <option value="1">待出貨</option>
+                                                <option value="2">出貨中</option>
+                                                <option value="3">已送達</option>
+                                            </select> -->
+                                        
+                                    </th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -286,7 +324,7 @@ $rows = $resultPage->fetch_all(MYSQLI_ASSOC);  //關聯式陣列
                                             </a>
                                         </td>
                                         <td>
-                                            <a href="order-detail.php?order_status=<?= $data["order_status"] ?>" class="text-body" style="text-decoration:none;">
+                                            <p class="text-body" style="text-decoration:none;">
                                                 <?php 
                                                 if($data["order_status"] == 1){
                                                     echo"待出貨";    
@@ -296,9 +334,8 @@ $rows = $resultPage->fetch_all(MYSQLI_ASSOC);  //關聯式陣列
                                                     echo"已送達";    
                                                 } 
                                                 ?>
-                                            </a>
-                                        </td>
-                                        
+                                            </p>
+                                        </td>                                        
                                     </tr>
                                 <?php endforeach; ?>
                             </tbody>
@@ -310,27 +347,24 @@ $rows = $resultPage->fetch_all(MYSQLI_ASSOC);  //關聯式陣列
     </div>
         <!-- 頁面選單 -->
         <div class="pagination-container justify-content-end">
-            <?php if (!isset($_GET["date"])) : ?>
+            <?php if (!isset($_GET["startDate"])) : ?>
                 <nav aria-label="Page navigation example">
                     <ul class="pagination">
                         <?php for ($i = 1; $i <= $totalPage; $i++) : ?>
-                            <li class="page-item <?php if ($i == $page) echo "active"; ?>"><a class="page-link" href="order-list.php?
-                            page=<?= $i ?>"><?= $i ?></a></li>
+                            <li class="page-item <?php if ($i == $page) echo "active"; ?>"><a class="page-link" href="order-list.php?page=<?php echo $i;?>">
+                                <?= $i ?></a></li>
                         <?php endfor; ?>
                     </ul>
                 </nav>
 
-            <?php elseif (isset($_GET["date"])) : ?>
+            <?php elseif (isset($_GET["startDate"])) : ?>
                 <nav aria-label="Page navigation example">
                     <ul class="pagination">
                         <?php for ($i = 1; $i <= $totalPage; $i++) : ?>
                             <li class="page-item 
                                 <?php if ($i == $page) echo "active"; ?>">
-                                <a class="page-link" href="order-list.php?
-                                startDate<?= $_GET["startDate"] ?>
-                                &endDate<?= $_GET["endDate"] ?>
-                                &page=<?= $i ?>">
-                                <?= $i ?>
+                                <a class="page-link" href="order-list.php?startDate=<?php echo $_GET["startDate"];?>&endDate=<?php echo $_GET["endDate"];?>&page=<?php echo $i;?>">
+                                <?= $i ?> 
                                 </a>
                             </li>
                         <?php endfor; ?>

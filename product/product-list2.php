@@ -2,8 +2,8 @@
 require_once("../db2-connect.php");
 
 session_start();
-if (!isset($_SESSION["sellers"])) {
-  header("location: ../seller/login.php");
+if (!isset($_SESSION["user"])) {
+  header("location: login.php");
 }
 $category = "";
 $sqlCategory = "SELECT * FROM category  ORDER BY id ASC";
