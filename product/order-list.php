@@ -1,5 +1,10 @@
 <?php
 require_once("../db2-connect.php");
+// session_start();
+
+// if(!isset($_SESSION["sellers"])){
+//   header("location: login.php");
+// }
 
 $whereClause = "";
 
@@ -24,11 +29,17 @@ if (isset($_GET["startDate"])) {
     $end = $_GET["endDate"];
     $whereClause = "WHERE user_order.order_date BETWEEN '$start' AND '$end'";
 }
+if (isset($_GET["order_status"])) {
+    $order_status = $_GET["order_status"];
+    $whereClause = "WHERE order_status = '$order_status'";       
+}
+
 
 
 $sql = "SELECT user_order.*, users.account, product.price, product.name AS product_name FROM user_order
 JOIN users ON user_order.user_id = users.id
 JOIN product ON user_order.product_id = product.id
+
 
 $whereClause
 ORDER BY user_order.id DESC
@@ -40,27 +51,27 @@ $rows = $result->fetch_all(MYSQLI_ASSOC);
 // var_dump($rows);
 
 //頁數
-$sqlALL = "SELECT user_order.*, product.name AS product_name FROM user_order JOIN users ON user_order.user_id = users.id
-JOIN product ON user_order.product_id = product.id ORDER BY order_date DESC";
+$sqlALL = "SELECT user_order.*, users.account, product.price, product.name AS product_name FROM user_order JOIN users ON user_order.user_id = users.id
+    JOIN product ON user_order.product_id = product.id  $whereClause ORDER BY user_order.order_date DESC";
 $resultAll = $conn->query($sqlALL);
 $userCount = $resultAll->num_rows;
 // var_dump($resultAll); 
-    if (isset($_GET["page"])) {
-        $page = $_GET["page"];
-    } else {
-        $page = 1;
-    }
-    
-    $per_page = 5;
-    $page_start = ($page - 1) * $per_page;
+if (isset($_GET["page"])) {
+    $page = $_GET["page"];
+} else {
+    $page = 1;
+}
 
-    $sqlPage = "SELECT * FROM `user_order` WHERE id ORDER BY `order_date` DESC LIMIT $page_start, $per_page";
+$per_page = 5;
+$page_start = ($page - 1) * $per_page;
 
-    $resultPage = $conn->query($sqlPage);
+$sqlPage = "SELECT user_order.*, users.account, product.price, product.name AS product_name FROM user_order JOIN users ON user_order.user_id = users.id
+    JOIN product ON user_order.product_id = product.id $whereClause ORDER BY user_order.order_date DESC LIMIT {$page_start}, {$per_page}";
 
-    //計算頁數
-    $totalPage = ceil($userCount / $per_page);  //ceil無條件進位
-    $rows = $resultPage->fetch_all(MYSQLI_ASSOC);  //關聯式陣列
+$resultPage = $conn->query($sqlPage);
+//計算頁數
+$totalPage = ceil($userCount / $per_page);  //ceil無條件進位    
+$rows = $resultPage->fetch_all(MYSQLI_ASSOC);  //關聯式陣列
 
 //頁數
 
@@ -77,109 +88,113 @@ $userCount = $resultAll->num_rows;
     <!-- Bootstrap CSS v5.2.1 -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-iYQeCzEYFbKjA/T2uDLTpkwGzCiq6soy8tYaI1GyVh/UjpbCx/TYkiZhlZB6+fzT" crossorigin="anonymous">
     <Style>
-        .body {
-            margin: 0;
-            padding: 0;
+        body {
+            height: 300vh;
         }
 
-        a {
+        :root {
+            --side-width: 260px;
+        }
+
+        .main-nav .form-control {
+            background: #444;
+            border: none;
+            color: #fff;
+            border-radius: 0;
+        }
+
+        .main-nav .btn {
+            border-radius: 0;
+        }
+
+        .nav a {
+            color: gray;
+        }
+
+        .nav a:hover {
+            color: white;
+        }
+
+        .logo {
+            width: var(--side-width);
+        }
+
+        .left-aside {
+            width: var(--side-width);
+            height: 100vh;
+            padding-top: 54px;
+            overflow: auto;
+        }
+
+        .aside-menu ul a {
+            display: block;
+            color: #666;
             text-decoration: none;
-            color: black;
-            font-weight: 600;
+            display: flex;
+            justify-content: center;
+            margin: 15px;
         }
 
-        a:hover {
-            color: cadetblue
-        }
-
-        .object-cover {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-
-        .footer {
-            background-color: black;
-            padding: 25px 30px;
-            min-height: 50px;
-        }
-
-        .nav-item:hover {
+        .aside-menu a:hover {
+            color: white;
             background: cadetblue;
-            border-radius: 15px;
+            border-radius: 0.375rem;
+
+        }
+
+        .aside-menu a i {
+            margin-right: 8px;
+            margin-top: 4px;
+        }
+
+        .aside-subtitle {
+            font-size: 14px;
+        }
+
+        .main-content {
+            margin-left: calc(var(--side-width) + 20px);
+            padding-top: 54px;
         }
     </Style>
 </head>
 
 <body>
     <!--  style="border: 1px solid red ;"檢查邊框 -->
-    <main>
-        <div class="row g-0">
-            <div class="col-xs-12 col-sm-4 col-md-4 col-lg-3">
+    <nav class="main-nav d-flex bg-dark fixed-top shadow">
+        <a class="text-nowrap px-3 text-white text-decoration-none d-flex align-items-center justify-content-center logo flex-shrink-0 fs-4 text" href="">藝拍</a>
+        <div class="nav">
+            <a class="nav-link active" aria-current="page" href="#">首頁</a>
+            <a class="nav-link" href="../product/product-list2.php">藝術品</a>
+            <a class="nav-link" href="../seller/sellers.php">畫家</a>
+            <a class="nav-link" href="../user/users.php">會員</a>
+            <a class="nav-link" href="../product/order-list.php">訂單</a>
+            <a class="nav-link" href="../user/product-list2.php">展覽空間</a>
+        </div>
+        <div class="position-absolute top-0 end-0">
+            <a class="btn btn-dark text-nowrap" href="logout.php">Sign out</a>
+        </div>
+    </nav>
+    <aside class="left-aside position-fixed bg-dark border-end">
+        <nav class="aside-menu">
+            <!-- <div class="pt-2 px-3 pb-2 d-flex justify-content-center text-white">
+        Welcome <?= $_SESSION["user"]["account"] ?> !
+      </div> -->
+            <ul class="list-unstyled">
+                <h1 class="py-2 d-flex justify-content-center text-white">會員</h1>
+                <hr class="text-white">
+                <li><a href="../user/users.php" class="px-3 py-2"> <i class="fa-solid fa-gauge fa-fw"></i>會員資料</a></li>
+                <li><a href="../product/order-list.php" class="px-3 py-2"><i class="fa-regular fa-file-lines fa-fw"></i>訂單管理</a></li>
+                <li><a href="" class="px-3 py-2"><i class="fa-solid fa-user"></i>折扣卷</a></li>
+                <li><a href="../product/product-list2.php" class="px-3 py-2"><i class="fa-solid fa-cart-shopping"></i>藝術品</a></li>
+                <li><a href="" class="px-3 py-2"><i class="fa-solid fa-chart-simple"></i>我的收藏</a></li>
+            </ul>
 
-                <div class="d-flex flex-column flex-shrink-0 p-3 text-white bg-dark" style="height: 100%; min-height:100vh">
-                    <a href="../seller/dashboard.php" class="d-flex align-items-center mb-3 mb-md-0 me-md-auto text-white text-decoration-none">
-                        <svg class="bi me-2" width="40" height="32">
-                            <use xlink:href="#bootstrap"></use>
-                        </svg>
-                        <span class="fs-4">藝拍</span>
-                    </a>
-                    <hr>
-                    <ul class="nav nav-pills flex-column mb-auto">
-                        <li class="nav-item">
-                            <a href="../seller/dashboard.php" class="nav-link text-white" aria-current="page">
-                                <svg class="bi me-2" width="16" height="16">
-                                    <use xlink:href="#home"></use>
-                                </svg>
-                                首頁
-                            </a>
-                        </li>
-                        <!-- <li class="nav-item">
-                            <a href="order-list2.php" class="nav-link  text-white">
-                                <svg class="bi me-2" width="16" height="16">
-                                    <use xlink:href="#speedometer2"></use>
-                                </svg>
-                                Coupon
-                            </a>
-                        </li> -->
-                        <li class="nav-item">
-                            <a href="../seller/sellers.php" class="nav-link text-white">
-                                <svg class="bi me-2" width="16" height="16">
-                                    <use xlink:href="#table"></use>
-                                </svg>
-                                賣家管理
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="./product-list2.php" class="nav-link text-white">
-                                <svg class="bi me-2" width="16" height="16">
-                                    <use xlink:href="#grid"></use>
-                                </svg>
-                                藝術品
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="../seller/file-upload.php" class="nav-link text-white">
-                                <svg class="bi me-2" width="16" height="16">
-                                    <use xlink:href="#people-circle"></use>
-                                </svg>
-                                賣家藝術品上傳
-                            </a>
-                        </li>
-                    </ul>
-                    <hr>
-                    <div class="dropdown">
-                        <a href="#" class="d-flex align-items-center text-white text-decoration-none dropdown-toggle" id="dropdownUser1" data-bs-toggle="dropdown" aria-expanded="false">
-                            <img src="./images/201.jpg" alt="" width="32" height="32" class="rounded-circle me-2">
-                            <strong>關於我們</strong>
-                        </a>
-
-                    </div>
-                </div>
-
-            </div>
+        </nav>
+    </aside>
+    <!-- 右主畫面 -->
+    <main class="main-content">
+        <div class="d-flex justify-content-between">
             <div class="col-xs-12 col-sm-8 col-md-8 col-lg-9">
-
                 <div class="container">
                     <?php if (isset($_GET["date"]) || isset($_GET["product_id"]) || isset($_GET["user_id"]) || isset($_GET["startDate"])) : ?>
                         <div class="py-2">
@@ -195,7 +210,7 @@ $userCount = $resultAll->num_rows;
                                                                                                     ?>">
                                 </div>
                                 <div class="col-auto">
-                                    to
+                                    至
                                 </div>
                                 <div class="col-auto">
                                     <input type="date" class="form-control" name="endDate" value="<?php
@@ -209,14 +224,14 @@ $userCount = $resultAll->num_rows;
                         </form>
                     </div>
                     <!-- 搜尋結果 -->
-                    <div class="py-2">
+                    <!-- <div class="py-2">
                         <form action="order-list.php" method="get">
                             <div class="input-group">
                                 <input type="text" class="form-control" name="search">
                                 <button type="submit" class="btn btn-secondary">搜尋</button>
                             </div>
                         </form>
-                    </div>
+                    </div> -->
                     <?php if (isset($_GET["search"])) : ?>
                         <div class="py-2">
                             <a class="btn btn-secondary" href="order-list.php">回訂單列表</a>
@@ -227,7 +242,7 @@ $userCount = $resultAll->num_rows;
                         共 <?= $userCount ?> 筆
                     </div>
 
-                    <div class="table-responsive">
+                    <div class="table-responsive ">
                         <table class="table table-bordered">
                             <thead>
                                 <tr>
@@ -237,68 +252,95 @@ $userCount = $resultAll->num_rows;
                                     <th>訂購數量</th>
                                     <th>訂購者</th>
                                     <th>寄送地址</th>
-                                    <!-- <th>優惠券代碼</th> -->
+                                    <th>出貨狀態</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 <?php foreach ($rows as $data) : ?>
-                                    
+
                                     <tr>
                                         <td>
-                                            <a href="order-detail.php?id=<?= $data["id"] ?>">
+                                            <a href="order-detail.php?id=<?= $data["id"] ?>" class="text-body" >
                                                 <?= $data["id"] ?>
                                             </a>
-                                        <td>
-                                            <a href="order-list.php?date=<?= $data["order_date"] ?>"><?= $data["order_date"] ?></a>
-                                        </td>
                                         </td>
                                         <td>
-                                            <a href="order-list.php?product_id=<?= $data["product_id"] ?>">
+                                            <a href="order-list.php?date=<?= $data["order_date"] ?>" class="text-body" style="text-decoration:none;"><?= $data["order_date"] ?></a>
+                                        </td>
+                                        <td>
+                                            <a href="order-list.php?product_id=<?= $data["product_id"] ?>" class="text-body" style="text-decoration:none;">
                                                 <?= $data["product_name"] ?>
                                             </a>
                                         </td>
-                                        <td><?= $data["amount"] ?></td>
                                         <td>
-                                            <a href="order-list.php?user_id=<?= $data["user_id"] ?>">
+                                            <?= $data["amount"] ?>
+                                        </td>
+                                        <td>
+                                            <a href="order-list.php?user_id=<?= $data["user_id"] ?>" class="text-body" style="text-decoration:none;">
                                                 <?= $data["account"] ?>
                                             </a>
                                         </td>
                                         <td>
-                                            <a href="order-list.php?send_address=<?= $data["send_address"] ?>">
+                                            <a href="order-list.php?send_address=<?= $data["send_address"] ?>" class="text-body" style="text-decoration:none;">
                                                 <?= $data["send_address"] ?>
                                             </a>
                                         </td>
-                                        <!-- <td>
-                                            <a href="order-list2.php?coupon_id=<?= $data["coupon_id"] ?>">
-                                                <?= $data["coupon_id"] ?>
+                                        <td>
+                                            <a href="order-detail.php?order_status=<?= $data["order_status"] ?>" class="text-body" style="text-decoration:none;">
+                                                <?php 
+                                                if($data["order_status"] == 1){
+                                                    echo"待出貨";    
+                                                }else if($data["order_status"] == 2){
+                                                    echo"出貨中";    
+                                                }else if($data["order_status"] == 3){
+                                                    echo"已送達";    
+                                                } 
+                                                ?>
                                             </a>
-                                        </td> -->
+                                        </td>
+                                        
                                     </tr>
                                 <?php endforeach; ?>
                             </tbody>
                         </table>
                     </div>
                 </div>
-
-
-                <!-- 頁面選單 -->
-                <?php if (!isset($_GET["search"])) : ?>
-                    <nav aria-label="Page navigation example">
-                        <ul class="pagination">
-                            <?php for ($i = 1; $i <= $totalPage; $i++) : ?>
-                                <li class="page-item <?php if ($i == $page) echo "active"; ?>"><a class="page-link" href="order-list.php?page=<?= $i ?>"><?= $i ?></a></li>
-                            <?php endfor; ?>
-                        </ul>
-                    </nav>
-                <?php endif; ?>
-
-
-
-
             </div>
         </div>
+    </div>
+        <!-- 頁面選單 -->
+        <div class="pagination-container justify-content-end">
+            <?php if (!isset($_GET["date"])) : ?>
+                <nav aria-label="Page navigation example">
+                    <ul class="pagination">
+                        <?php for ($i = 1; $i <= $totalPage; $i++) : ?>
+                            <li class="page-item <?php if ($i == $page) echo "active"; ?>"><a class="page-link" href="order-list.php?
+                            page=<?= $i ?>"><?= $i ?></a></li>
+                        <?php endfor; ?>
+                    </ul>
+                </nav>
+
+            <?php elseif (isset($_GET["date"])) : ?>
+                <nav aria-label="Page navigation example">
+                    <ul class="pagination">
+                        <?php for ($i = 1; $i <= $totalPage; $i++) : ?>
+                            <li class="page-item 
+                                <?php if ($i == $page) echo "active"; ?>">
+                                <a class="page-link" href="order-list.php?
+                                startDate<?= $_GET["startDate"] ?>
+                                &endDate<?= $_GET["endDate"] ?>
+                                &page=<?= $i ?>">
+                                <?= $i ?>
+                                </a>
+                            </li>
+                        <?php endfor; ?>
+                    </ul>
+                </nav>
+            <?php endif; ?>
+        </div>
     </main>
-    <footer class="footer">
+
+    <!-- <footer class="footer">
         <div class="container-fruid d-flex justify-content-center">
             <div class="menu list-unstyled inline-flex">
 
@@ -318,7 +360,44 @@ $userCount = $resultAll->num_rows;
         </div>
 
 
-    </footer>
+    </footer> -->
+    <!-- Bootstrap JavaScript Libraries -->
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.5/dist/umd/popper.min.js" integrity="sha384-Xe+8cL9oJa6tN/veChSP7q+mnSPaj5Bcu9mPX5F5xIGE0DVittaqT5lorf0EI7Vk" crossorigin="anonymous">
+    </script>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0/dist/js/bootstrap.min.js" integrity="sha384-ODmDIVzN+pFdexxHEHFBQH3/9/vQ9uori45z4JjnFsRydbmQbmL5t1tQ0culUzyK" crossorigin="anonymous">
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        const labels = [
+            'January',
+            'February',
+            'March',
+            'April',
+            'May',
+            'June',
+        ];
+
+        const data = {
+            labels: labels,
+            datasets: [{
+                label: 'My First dataset',
+                backgroundColor: 'rgb(255, 99, 132)',
+                borderColor: 'rgb(255, 99, 132)',
+                data: [0, 10, 5, 2, 20, 30, 45],
+            }]
+        };
+
+        const config = {
+            type: 'line',
+            data: data,
+            options: {}
+        };
+        const myChart = new Chart(
+            document.getElementById('myChart'),
+            config
+        );
+    </script>
 
 </body>
 

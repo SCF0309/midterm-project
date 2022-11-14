@@ -33,114 +33,123 @@ $row = $result->fetch_assoc();
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-iYQeCzEYFbKjA/T2uDLTpkwGzCiq6soy8tYaI1GyVh/UjpbCx/TYkiZhlZB6+fzT" crossorigin="anonymous">
 
   <Style>
-        .body {
-            margin: 0;
-            padding: 0;
+        body {
+            height: 300vh;
         }
 
-        .object-cover {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
+        :root {
+            --side-width: 260px;
         }
 
-        .footer {
-            background-color: black;
-            padding: 25px 30px;
-            min-height: 50px;
+        .main-nav .form-control {
+            background: #444;
+            border: none;
+            color: #fff;
+            border-radius: 0;
         }
-        .nav-item:hover{
-            background: #0d6efd;
-            border-radius: 15px;
+
+        .main-nav .btn {
+            border-radius: 0;
+        }
+
+        .nav a {
+            color: gray;
+        }
+
+        .nav a:hover {
+            color: white;
+        }
+
+        .logo {
+            width: var(--side-width);
+        }
+
+        .left-aside {
+            width: var(--side-width);
+            height: 100vh;
+            padding-top: 54px;
+            overflow: auto;
+        }
+
+        .aside-menu ul a {
+            display: block;
+            color: #666;
+            text-decoration: none;
+            display: flex;
+            justify-content: center;
+            margin: 15px;
+        }
+
+        .aside-menu a:hover {
+            color: white;
+            background: cadetblue;
+            border-radius: 0.375rem;
+
+        }
+
+        .aside-menu a i {
+            margin-right: 8px;
+            margin-top: 4px;
+        }
+
+        .aside-subtitle {
+            font-size: 14px;
+        }
+
+        .main-content {
+            margin-left: calc(var(--side-width) + 20px);
+            padding-top: 54px;
         }
     </Style>
 </head>
 
 <body>
 
-  <main>
-    <div class="row g-0">
-    <div class="col-xs-12 col-sm-4 col-md-4 col-lg-3">
+<nav class="main-nav d-flex bg-dark fixed-top shadow">
+        <a class="text-nowrap px-3 text-white text-decoration-none d-flex align-items-center justify-content-center logo flex-shrink-0 fs-4 text" href="">藝拍</a>
+        <div class="nav">
+            <a class="nav-link active" aria-current="page" href="#">首頁</a>
+            <a class="nav-link" href="../product/product-list2.php">藝術品</a>
+            <a class="nav-link" href="../seller/sellers.php">畫家</a>
+            <a class="nav-link" href="../user/users.php">會員</a>
+            <a class="nav-link" href="../product/order-list.php">訂單</a>
+            <a class="nav-link" href="../user/product-list2.php">展覽空間</a>
+        </div>
+        <div class="position-absolute top-0 end-0">
+            <a class="btn btn-dark text-nowrap" href="logout.php">Sign out</a>
+        </div>
+    </nav>
+    <aside class="left-aside position-fixed bg-dark border-end">
+        <nav class="aside-menu">
+            <!-- <div class="pt-2 px-3 pb-2 d-flex justify-content-center text-white">
+        Welcome <?= $_SESSION["user"]["account"] ?> !
+      </div> -->
+            <ul class="list-unstyled">
+                <h1 class="py-2 d-flex justify-content-center text-white">會員</h1>
+                <hr class="text-white">
+                <li><a href="../user/users.php" class="px-3 py-2"> <i class="fa-solid fa-gauge fa-fw"></i>會員資料</a></li>
+                <li><a href="../product/order-list.php" class="px-3 py-2"><i class="fa-regular fa-file-lines fa-fw"></i>訂單管理</a></li>
+                <li><a href="" class="px-3 py-2"><i class="fa-solid fa-user"></i>折扣卷</a></li>
+                <li><a href="../product/product-list2.php" class="px-3 py-2"><i class="fa-solid fa-cart-shopping"></i>藝術品</a></li>
+                <li><a href="" class="px-3 py-2"><i class="fa-solid fa-chart-simple"></i>我的收藏</a></li>
+            </ul>
 
-<div class="d-flex flex-column flex-shrink-0 p-3 text-white bg-dark" style="height: 100%; min-height:100vh">
-    <a href="../seller/dashboard.php" class="d-flex align-items-center mb-3 mb-md-0 me-md-auto text-white text-decoration-none">
-        <svg class="bi me-2" width="40" height="32">
-            <use xlink:href="#bootstrap"></use>
-        </svg>
-        <span class="fs-4">藝拍</span>
-    </a>
-    <hr>
-    <ul class="nav nav-pills flex-column mb-auto">
-        <li class="nav-item">
-            <a href="../seller/dashboard.php" class="nav-link text-white" aria-current="page">
-                <svg class="bi me-2" width="16" height="16">
-                    <use xlink:href="#home"></use>
-                </svg>
-                首頁
-            </a>
-        </li>
-        <!-- <li class="nav-item">
-            <a href="order-list2.php" class="nav-link  text-white">
-                <svg class="bi me-2" width="16" height="16">
-                    <use xlink:href="#speedometer2"></use>
-                </svg>
-                Coupon
-            </a>
-        </li> -->
-        <li class="nav-item">
-            <a href="../seller/sellers.php" class="nav-link text-white">
-                <svg class="bi me-2" width="16" height="16">
-                    <use xlink:href="#table"></use>
-                </svg>
-                賣家管理
-            </a>
-        </li>
-        <li class="nav-item">
-            <a href="./product-list2.php" class="nav-link text-white">
-                <svg class="bi me-2" width="16" height="16">
-                    <use xlink:href="#grid"></use>
-                </svg>
-                藝術品
-            </a>
-        </li>
-        <li class="nav-item">
-            <a href="../seller/file-upload.php" class="nav-link text-white">
-                <svg class="bi me-2" width="16" height="16">
-                    <use xlink:href="#people-circle"></use>
-                </svg>
-                賣家藝術品上傳
-            </a>
-        </li>
-    </ul>
-    <hr>
-    <div class="dropdown">
-        <a href="#" class="d-flex align-items-center text-white text-decoration-none dropdown-toggle" id="dropdownUser1" data-bs-toggle="dropdown" aria-expanded="false">
-            <img src="./images/201.jpg" alt="" width="32" height="32" class="rounded-circle me-2">
-            <strong>關於我們</strong>
-        </a>
-        <!-- <ul class="dropdown-menu dropdown-menu-dark text-small shadow" aria-labelledby="dropdownUser1">
-            <li><a class="dropdown-item" href="#">New project...</a></li>
-            <li><a class="dropdown-item" href="#">Settings</a></li>
-            <li><a class="dropdown-item" href="#">Profile</a></li>
-            <li>
-                <hr class="dropdown-divider">
-            </li>
-            <li><a class="dropdown-item" href="#">Sign out</a></li>
-        </ul> -->
-    </div>
-</div>
+        </nav>
+    </aside>
 
 </div>
-      <div class="col-xs-12 col-sm-8 col-md-8 col-lg-9">
+<main class="main-content">
+        <div class="d-flex justify-content-between">
+      
 
         <div class="container">
 
           <div class="py-2">
-            <a class="btn btn-info" href="order-list.php">Back</a>
+            <a class="btn btn-dark" href="order-list.php">返回</a>
           </div>
           <table class="table">
             <tr>
-              <th>id</th>
+              <th>訂單編號</th>
               <td><?= $row["id"] ?></td>
             </tr>
             <tr>
@@ -167,11 +176,27 @@ $row = $result->fetch_assoc();
               <th>總價</th>
               <td><?= $row["price"] * $row["amount"] ?></td>
             </tr>
+            <tr>
+              <th>出貨狀態</th>
+              <td>
+                <?php
+                 if($row["order_status"] == 1){
+                    echo"待出貨";    
+                }else if($row["order_status"] == 2){
+                    echo"出貨中";    
+                }else if($row["order_status"] == 3){
+                    echo"已送達";    
+                } 
+                ?>
+              </td> 
+                                               
+            </tr>
           </table>
         </div>
       </div>
-  </main>
-  <footer class="footer">
+      </div>
+    </main>
+  <!-- <footer class="footer">
         <div class="container-fruid d-flex justify-content-center">
             <div class="menu list-unstyled inline-flex">
 
@@ -191,23 +216,44 @@ $row = $result->fetch_assoc();
         </div>
 
 
-    </footer>
+    </footer> -->
+<!-- Bootstrap JavaScript Libraries -->
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.5/dist/umd/popper.min.js" integrity="sha384-Xe+8cL9oJa6tN/veChSP7q+mnSPaj5Bcu9mPX5F5xIGE0DVittaqT5lorf0EI7Vk" crossorigin="anonymous">
+    </script>
 
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0/dist/js/bootstrap.min.js" integrity="sha384-ODmDIVzN+pFdexxHEHFBQH3/9/vQ9uori45z4JjnFsRydbmQbmL5t1tQ0culUzyK" crossorigin="anonymous">
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        const labels = [
+            'January',
+            'February',
+            'March',
+            'April',
+            'May',
+            'June',
+        ];
 
+        const data = {
+            labels: labels,
+            datasets: [{
+                label: 'My First dataset',
+                backgroundColor: 'rgb(255, 99, 132)',
+                borderColor: 'rgb(255, 99, 132)',
+                data: [0, 10, 5, 2, 20, 30, 45],
+            }]
+        };
 
-
-
-
-
-
-
-
-
-
-
-
-
-
+        const config = {
+            type: 'line',
+            data: data,
+            options: {}
+        };
+        const myChart = new Chart(
+            document.getElementById('myChart'),
+            config
+        );
+    </script>
 </body>
 
 </html>
